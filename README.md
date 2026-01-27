@@ -3,7 +3,6 @@
 This is a script for the [Archean game](https://store.steampowered.com/app/2941660/Archean/). It can also be found on the [Steam workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3613774706) for direct integration with the game.
 
 # Description
-
 This is just another auto crafting script. Connect some containers, a dashboard, some crafters, and be happy.
 
 ## The script features
@@ -57,7 +56,7 @@ Connect a conveyor named "Output_conveyor" going from the crafting containers to
 That's it. The autocrafter will automatically move items from the craft containers to the output **when idling**.
 
 ### Dedicated tool containers
-Additionally to output containers, you can add another conveyor named "Tool_conveyor" going from the craft or output containers to containers named "Tool_container*". Connect everything to the computer and it will move all the tools, construction blocks, and spools to the tool containers. This is useful to construct close to your base or easily finding these commonly used items.
+Additionally to output containers, you can add another conveyor named "Tool_conveyor" going from the output containers to containers named "Tool_container*". Connect everything to the computer and it will move all the tools, construction blocks, and spools to the tool containers. This is useful to construct close to your base or easily finding these commonly used items.
 
 
 ### Color customisation
