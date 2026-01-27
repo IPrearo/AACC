@@ -12,7 +12,6 @@ var $s_height : number
 var $screen_dirty = 0
 
 
-
 function @Dirty_screen()
 	; Sinalizes that the screen should be redrawn
 	$screen_dirty = 1

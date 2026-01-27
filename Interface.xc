@@ -11,7 +11,6 @@
 
 include "Crafting.xc"
 include "Screen_functions.xc"
-include "Input_devices.xc"
 
 ; Whether it is in the welcome screen
 var $welcome_screen = 1
@@ -97,6 +96,7 @@ function @Col_button($xs:number, $ys:number, $width:number, $height:number, $lab
 	
 	if $screen.button_rect($xs, $ys, $xs+$width, $ys+$height, $cb, $cf)
 		$clicked = 1
+		
 	$screen.write($txt_x, $txt_y, $cb, $label)
 	return $clicked
 	
@@ -174,6 +174,7 @@ function @Main_button($xs:number, $ys:number, $txt:text, $selected:number) : num
 
 
 function @Item_button($ys:number, $w:number, $txt:text) : number
+	$txt = get_recipe_label($txt)
 	; Draws one item button
 	var $txt_x = $b_width + @Centralized_x($w, $txt)
 	var $txt_y = $ys + @Centralized_y($screen.char_h+$ITEM_MARGIN)
@@ -213,21 +214,26 @@ function @Craft_amount_button($xs:number, $ys:number, $width:number, $amount:num
 	
 function @Draw_right_sidescreen()
 	; Draws the right sidescreen
+	var $display_selected = get_recipe_label($selected_item)
 	var $xs = $s_width-2*$b_width+$ITEM_MARGIN
 	var $xe = $xs + 2*$b_width - 2*$ITEM_MARGIN
 	$screen.draw_rect($xs-$ITEM_MARGIN+1, 2*$b_height, $s_width-1, 8*$b_height+5, $bgC, $dfC)
 	
 	$screen.text_size(2)
-	var $txt_x = $xs + @Centralized_x(2*$b_width-2*$ITEM_MARGIN, $selected_item)
+	var $txt_x = $xs + @Centralized_x(2*$b_width-2*$ITEM_MARGIN, $display_selected)
 	var $line_y = 2.5*$b_height+$screen.char_h/2+8
 	
-	$screen.write($txt_x, 2.5*$b_height, $fgC, $selected_item)
-	$screen.draw_line($txt_x-2, $line_y, $txt_x+2+$screen.char_w*size($selected_item), $line_y, $fgC)
+	$screen.write($txt_x, 2.5*$b_height, $fgC, $display_selected)
+	$screen.draw_line($txt_x-2, $line_y, $txt_x+2+$screen.char_w*size($display_selected), $line_y, $fgC)
 	
 	$screen.text_size(1)
 	var $recipe = get_recipe("crafter", $selected_item)
 	if $recipe
-		@Collumn_write($xs, $line_y+$screen.char_h, $xe, 4*$b_height-$screen.char_h, $fgC, $recipe, 1)
+		var $display_r = ""
+		foreach $recipe ($item, $qtty)
+			var $display_item = get_recipe_label($item)
+			$display_r.$display_item = $qtty
+		@Collumn_write($xs, $line_y+$screen.char_h, $xe, 4*$b_height-$screen.char_h, $fgC, $display_r, 1)
 		
 	var $small_width = ($xe-$xs) / 3
 	@Craft_amount_button($xs, 4*$b_height, $small_width, 1)
@@ -413,9 +419,10 @@ function @Draw_left_sidescreen()
 	foreach $current_stack ($k, $v)
 		if $txt_y + 2*$screen.char_h > $s_height-$b_height
 			break
-		var $kx = @Centralized_x($b_width, $k)
+		var $item_label = get_recipe_label($k)
+		var $kx = @Centralized_x($b_width, $item_label)
 		var $vx = @Centralized_x($b_width, $v)
-		$screen.write($kx, $txt_y, $fgC, $k)
+		$screen.write($kx, $txt_y, $fgC, $item_label)
 		$txt_y += $screen.char_h
 		$screen.write($vx, $txt_y, $fgC, $v)
 		$txt_y += 2*$screen.char_h
