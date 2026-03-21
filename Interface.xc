@@ -36,6 +36,8 @@ var $b_width = 0
 var $b_height = 0
 var $b_txt_size = 1
 
+; Crafter categories from base game
+const $ARCHEAN_CATEGORIES = "COMPONENTS,CONSTRUCTION,MISC,PARTS,SPOOLS,TOOLS"
 ; Crafter categories to draw
 array $craft_categories : text
 ; Number of categories
@@ -133,7 +135,7 @@ function @Initialize_interface()
 	@Draw_welcome_logo(0.5*$s_width-(1.5+0.5*size($welcome))*$screen.char_w, 0.5*$s_height)
 	
 	; Initializes some global variables
-	$craft_categories.from(@Crafter_categories(), ",")
+	$craft_categories.from($ARCHEAN_CATEGORIES & ",MODS", ",")
 	$selected_category = $craft_categories.0
 	
 	$N_categories = $craft_categories.size
@@ -331,8 +333,23 @@ function @Draw_items()
 		foreach $craft_categories ($j, $cat)
 			$temp.from(get_recipes("crafter", $cat), ",")
 			foreach $temp ($i, $item)
-				if contains(lower($item), lower($search_term))
+				var $label = get_recipe_label($item)
+				if contains(lower($label), lower($search_term))
 					$items.append($item)
+	elseif $selected_category == "MODS"
+		array $categories : text
+		var $items_str = ""
+		$categories.from(get_recipes_categories("crafter"), ",")
+		foreach $categories ($i, $cat)
+			if contains($ARCHEAN_CATEGORIES, $cat)
+				continue
+			if size($items_str)
+				$items_str &= "," & get_recipes("crafter", $cat)
+			else
+				$items_str &= get_recipes("crafter", $cat)
+		
+		$items.from($items_str, ",")
+		
 	else
 		$items.from(get_recipes("crafter", $selected_category), ",")
 		
@@ -448,6 +465,8 @@ click.$screen()
 	@Draw_screen()
 	
 timer frequency 20
+	if @Missing_devices()
+		return
 	; Checks if the screen needs to be redrawn because of screen dirt
 	if $numpad_on and @Numpad_val() != $selected_qtty
 		$selected_qtty = @Numpad_val()
@@ -460,16 +479,19 @@ timer frequency 20
 		@Draw_screen()
 		
 timer interval 0.5
+	if @Missing_devices()
+		return
 	; Queues autocrafting items
 	if $autocraft and @Crafting_empty()
 		@Missing_autocrafting_items()
 
-	; Draws the left sidescreen during crafting
+	; Doesn't draw the screens if it's in "welcome" mode
 	if $welcome_screen
 		return
 		
-	if @Crafting_empty() and !$was_crafting
+	if @Crafting_empty() and !$finished_crafting
 		return
 		
 	@Draw_left_sidescreen()
 	@Draw_right_sidescreen()
+	$finished_crafting = 0

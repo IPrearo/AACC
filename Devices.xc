@@ -35,7 +35,6 @@ var $is_error = 0
 const $keyboard = "Craft_keyboard"
 ; Numpad for screen input
 const $numpad = "Craft_numpad"
-
 	
 	
 	; =-=-=-=-=-=-= G E N E R A L =-=-=-=-=-=-=
@@ -64,6 +63,32 @@ function @Initialize_devices()
 	; Starts all the crafters as available
 	foreach $crafter_numbers ($i, $n)
 		$available_crafters.append($n)
+		
+		
+function @_Device_missing($alias:text) : number
+	return device_type($alias) == ""
+
+function @Missing_devices() : number	
+	if @_Device_missing("Craft_dashboard")
+		return 1
+		
+	foreach $container_numbers ($i, $n)
+		if @_Device_missing( text($container_prefix, $n) )
+			return 1
+			
+	foreach $output_numbers ($i, $n)
+		if @_Device_missing( text($output_prefix, $n) )
+			return 1
+			
+	foreach $tool_numbers ($i, $n)
+		if @_Device_missing( text($tool_prefix, $n) )
+			return 1
+			
+	foreach $crafter_numbers ($i, $n)
+		if @_Device_missing( text($crafter_prefix, $n) )
+			return 1
+			
+	return 0
 		
 		
 		
@@ -156,6 +181,12 @@ function @Get_output_items() : text
 			; Sums the container contents to the overall resources ($contents)
 			foreach $output_contents ($j, $t)
 				$contents.@Add_to_contents($j, $t)
+	if $container_numbers.size
+		foreach $container_numbers ($i, $n)
+			var $container_contents = input_text(@Container_name($n), 0)
+			; Sums the container contents to the overall resources ($contents)
+			foreach $container_contents ($j, $t)
+				$contents.@Add_to_contents($j, $t)
 		
 	return $contents
 
@@ -217,7 +248,7 @@ function @Output_item_list() : text
 	foreach $crafter_categories ($i, $cat)
 		if $cat == "PARTS"
 			$temp_list.clear()
-			$temp_list.append("HDD")
+			$temp_list.append("ARCHEAN_computer.HDD")
 		else
 			$temp_list.from(@Crafter_category_items($cat), ",")
 			

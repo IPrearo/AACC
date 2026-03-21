@@ -7,7 +7,7 @@ This is just another auto crafting script. Connect some containers, a dashboard,
 
 ## The script features
  - Parallel crafting;
- - Storage management (to keep a set number of items in stock);
+ - Storage management (keep a set number of items always in stock);
  - Crafting queueing;
  - Automatic output and crafting queueing;
  - Keyboard and numpad inputs for search and crafting specific amounts;
@@ -20,8 +20,8 @@ This is just another auto crafting script. Connect some containers, a dashboard,
 
 ## Planned features
  - Input container for ores and sorting outputs and resources;
+ - Better version control;
  - Better error messages for debugging;
- - Support more container-crafter architectures;
  - Better github documentation.
 
 
@@ -66,9 +66,6 @@ To change the UI colors, feel free to change the global variables in the Interfa
 
 ## More at...
 This is the jist of it, I'll be updating this whenever I find a bug or new and cool functionality.
-
-Code on github:
-https://github.com/IPrearo/AACC
 
 This was made for my Archean let's play on youtube:
 https://youtube.com/playlist?list=PLE2DpCN7GH9U5ho76zWxBVVHLHhcie4iV

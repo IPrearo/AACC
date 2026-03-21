@@ -59,8 +59,8 @@ function @Vertical_write($xs:number, $ys:number, $color:number, $text:text)
 function @Collumn_write($xs:number, $ys:number, $xe:number, $ye:number, $color:number, $text:text, $kv:number)
 	; Writes a list of .key{value} items in columns
 	; EXAMPLE
-	; itemA:200			foo:35
-	; itemB:10			bar:6000
+	; itemA:200			itemC:35
+	; itemB:10			itemD:6000
 	
 	; Calculates the words and maximum word width
 	; By word this means the pattern item:value

@@ -25,10 +25,22 @@ storage var $autocraft : number
 ; Which items to keep in stock and how many of them in a .item{amount} pattern
 storage var $autocraft_items : text
 
+; Items whose crafting recipes craft more than 1 unit of it
+storage var $multicraft_items : text
+
+; Signals if a queue/stack was recently finished
+var $finished_crafting = 0
+
 
 
 function @Initialize_crafting()
 	@Initialize_devices()
+	array $spools : text
+	$multicraft_items = ".ARCHEAN_build.SteelRod{100}"
+	$spools.clear()
+	$spools.from( get_recipes("crafter", "SPOOLS"), "," )
+	foreach $spools ($i, $spool)
+		$multicraft_items.$spool = 100
 	$max_craft_Q_size = 0
 	$max_craft_S_size = 0
 	
@@ -37,6 +49,7 @@ function @Cancel_all_craft()
 	; Clears both the queue and stack
 	$craft_Q.clear()
 	$craft_S.clear()
+	@clear_error()
 		
 function @S_append($recipe:text)
 	; Appends a recipe to the top of the stack
@@ -47,6 +60,10 @@ function @S_append($recipe:text)
 function @S_pop()
 	; Pops the recipe at the top of the stack
 	$craft_S.pop()
+	if $craft_S.size == 0 and $craft_Q.size == 0
+		$finished_crafting = 1
+	else
+		$finished_crafting = 0
 
 		
 function @S_top_craft()
@@ -221,38 +238,40 @@ function @Missing_autocrafting_items()
 	if !size($autocraft_items)
 		return
 	
-	var $spools = get_recipes("crafter", "SPOOLS")
 	foreach $autocraft_items ($k, $v)
 		if $v > $all_items.$k
 			; print(text("{}: {}", $k, $v-$all_items.$k))
-			if contains($spools, $k)
-				@Q_append_amount($k, ceil(($v-$all_items.$k)/100) )
+			if contains($multicraft_items, $k)
+				print($k)
+				@Q_append_amount($k, ceil(($v-$all_items.$k)/$multicraft_items.$k) )
 			else
 				@Q_append_amount($k, $v-$all_items.$k)
 
 		
 		
 timer frequency $output_frequency
+	if @Missing_devices()
+		return
 	; Checks if it wasn't crafting recently to output items
 	; This is necessary to stop needed COMPONENTS (category of items)
 	; 	 being treated as output
 	if !$was_crafting
-		; Finds which items need to be outputed and sets the conveyor to do so
-		var $output_list = @Output_item_list()
-		if $output_list == ""
-			@Stop_output()
-		else
-			foreach $output_list ($k, $v)
-				@Start_conveyor($output_conveyor, $k, 1000)
-				break
-				
 		; Finds which items need to be sent to the tools containers and sets the conveyor
-		$output_list = @Tool_item_list()
+		var $output_list = @Tool_item_list()
 		if $output_list == ""
 			@Stop_tools()
 		else
 			foreach $output_list ($k, $v)
 				@Start_conveyor($tool_conveyor, $k, 1000)
+				break
+		
+		; Finds which items need to be outputed and sets the conveyor to do so
+		$output_list = @Output_item_list()
+		if $output_list == ""
+			@Stop_output()
+		else
+			foreach $output_list ($k, $v)
+				@Start_conveyor($output_conveyor, $k, 1000)
 				break
 		
 	else
@@ -262,7 +281,9 @@ timer frequency $output_frequency
 	$was_crafting = !@Crafting_empty() or !@All_crafters_available()
 	
 		
-tick
+update
+	if @Missing_devices()
+		return
 	; If there is an error, stops everything
 	if $is_error
 		return
