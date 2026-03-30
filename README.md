@@ -22,7 +22,6 @@ This is just another auto crafting script. Connect some containers, a dashboard,
  - Input container for ores and sorting outputs and resources;
  - Better version control;
  - Better error messages for debugging;
- - Better github documentation.
 
 
 ## How to use
@@ -30,7 +29,12 @@ Spawn the build (just a minicomputer) and insert the included HDD in a minicompu
 Then, connect containers and crafters named "Craft_container*" and "Crafter*" where * means a number between 1 and 100 (inclusive). These names and the maximum number (100) can be changed in code.
 Connect a dashboard named "Craft_dashboard", with a screen in port 0 (a big screen is recommended).
 Now you are all set. Start the computer and the dashboard screen should display a welcome message (click to advance).
-**All the crafters should be connected to all the "Craft_container*". This allows them to share resources.**
+
+__All the crafters should be connected to all the "Craft_container*". This allows them to share resources.__
+
+Item connections should look like the following (only the "Crafter*" and "Craft_container*" are needed):
+
+![Crafters and craft containers have a two-sided connection, craft containers connect through the output conveyor to the output containers, and those connect to tool containers through a tool conveyor.](./docs/images/Connections%20diagram.svg)
 
 
 ### Search feature
@@ -43,7 +47,7 @@ To have an automatic output to a container, connect an item conveyor named "Outp
 To set an amount to keep in stock, select the "SETTINGS" option on the menu, choose your item and either add, set, or subtract a number from the current set number.
 This auto-stocking option can be toggled on and off by pushing "AUTOCRAFTING" on the screen. This and the auto-stocking amount is stored so the computer can be rebooted without loss of functionality.
 
-On the right you can see the selected item, it's recipe, some usefull amount buttons, and two quantities like [0|1]. This is, in order, the amount you have in stock and the auto-stock amount setted for this item.
+On the right you can see the selected item, it's recipe, some usefull amount buttons, and two quantities like [0|1]. This is the amount you have in stock and the auto-stock amount setted for this item respectivelly.
 
 
 ### Keeping track of progress
