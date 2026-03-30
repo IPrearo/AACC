@@ -300,15 +300,14 @@ update
 		@Stop_output()
 		@Stop_tools()
 	
-	; Check if there are crafters available
-	if !$available_crafters.size
-		return
+	var $num_available_crafters = $available_crafters.size
 	
-	; Checks if the stack has items to craft
-	if $craft_S.size < 1
-		if $craft_Q.size < 1
-			return
-		@Q_to_S()
-		
-	; Craft the top stack item
-	@S_top_craft()
+	repeat $num_available_crafters ($i)
+		; Checks if the stack has items to craft
+		if $craft_S.size < 1
+			if $craft_Q.size < 1
+				return
+			@Q_to_S()
+			
+		; Craft the top stack item
+		@S_top_craft()
