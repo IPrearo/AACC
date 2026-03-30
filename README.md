@@ -30,6 +30,7 @@ Spawn the build (just a minicomputer) and insert the included HDD in a minicompu
 Then, connect containers and crafters named "Craft_container*" and "Crafter*" where * means a number between 1 and 100 (inclusive). These names and the maximum number (100) can be changed in code.
 Connect a dashboard named "Craft_dashboard", with a screen in port 0 (a big screen is recommended).
 Now you are all set. Start the computer and the dashboard screen should display a welcome message (click to advance).
+**All the crafters should be connected to all the "Craft_container*". This allows them to share resources.**
 
 
 ### Search feature
