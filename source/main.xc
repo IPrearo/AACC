@@ -1,6 +1,6 @@
 include "Interface.xc"
 
-const $AACC_VERSION = "V1.0"
+const $AACC_VERSION = "V1.0.1"
 
 init
 	; Initializes everything

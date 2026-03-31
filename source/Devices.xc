@@ -224,6 +224,7 @@ function @Output_item_list() : text
 	;		any of those should be in the output containers.
 	; Output items are defined as anything outside the "PARTS"
 	;   	category, but HDDs are manually included too.
+	var $_resource_items = @Get_resource_items()
 	var $item_list = ""
 	array $temp_list : text
 	array $crafter_categories : text
@@ -237,8 +238,8 @@ function @Output_item_list() : text
 			$temp_list.from(@Crafter_category_items($cat), ",")
 			
 		foreach $temp_list ($j, $item)
-			if $resource_items.$item > 0
-				$item_list.$item = $resource_items.$item
+			if $_resource_items.$item > 0
+				$item_list.$item = $_resource_items.$item
 				
 	return $item_list
 	
@@ -252,10 +253,14 @@ function @Tool_item_list() : text
 	var $item_list = ""
 	array $temp_list : text
 	array $crafter_categories : text
-	$crafter_categories.from("CONSTRUCTION,SPOOLS,TOOLS", ",")
+	$crafter_categories.from("CONSTRUCTION,SPOOLS,TOOLS,PARTS", ",")
 	; Checks each available resource if it should be outputed
 	foreach $crafter_categories ($i, $cat)
-		$temp_list.from(@Crafter_category_items($cat), ",")
+		if $cat == "PARTS"
+			$temp_list.clear()
+			$temp_list.append("ARCHEAN_computer.HDD")
+		else
+			$temp_list.from(@Crafter_category_items($cat), ",")
 			
 		foreach $temp_list ($j, $item)
 			if $output_items.$item > 0
@@ -367,6 +372,13 @@ function @Initialize_devices()
 		$dev_name = text($crafter_prefix, $i+1)
 		if device_type($dev_name) == "Crafter"
 			$crafter_numbers.append($i+1)
+			@Cancel_craft($dev_name)
+			
+			var $craft_screen = screen($dev_name, 3)
+			$craft_screen.blank()
+			$craft_screen.text_align(center)
+			$craft_screen.text_size(3)
+			$craft_screen.write("AACC\n\n" & $dev_name)
 			
 	; Starts all the crafters as available
 	foreach $crafter_numbers ($i, $n)
