@@ -27,6 +27,11 @@ array $crafter_numbers : number
 ; Stores which crafter numbers are not in use
 array $available_crafters : number
 
+
+var $resource_items : text
+var $updated_resources = 0
+
+
 ; Whether there was an error with the crafters
 var $is_error = 0
 
@@ -38,31 +43,6 @@ const $numpad = "Craft_numpad"
 	
 	
 	; =-=-=-=-=-=-= G E N E R A L =-=-=-=-=-=-=
-
-function @Initialize_devices()
-
-	; Checks which container and crafter numbers exist
-	; 	and stores it in the respective arrays
-	repeat $max_prefix_count ($i)
-		var $dev_name = text($container_prefix, $i+1)
-		if device_type($dev_name) == "Container" or device_type($dev_name) == "SmallContainer"
-			$container_numbers.append($i+1)
-			
-		$dev_name = text($output_prefix, $i+1)
-		if device_type($dev_name) == "Container" or device_type($dev_name) == "SmallContainer"
-			$output_numbers.append($i+1)
-			
-		$dev_name = text($tool_prefix, $i+1)
-		if device_type($dev_name) == "Container" or device_type($dev_name) == "SmallContainer"
-			$tool_numbers.append($i+1)
-			
-		$dev_name = text($crafter_prefix, $i+1)
-		if device_type($dev_name) == "Crafter"
-			$crafter_numbers.append($i+1)
-			
-	; Starts all the crafters as available
-	foreach $crafter_numbers ($i, $n)
-		$available_crafters.append($n)
 		
 		
 function @_Device_missing($alias:text) : number
@@ -157,6 +137,9 @@ function @Add_to_contents($contents:text, $item:text, $amount:number) : text
 	return $contents
 
 function @Get_resource_items() : text
+	if $updated_resources
+		return $resource_items
+
 	; Sums up all items from the identified containers and returns a K{V} string
 	;	This K{V} string will be a collection of all resources available
 	var $contents = ""
@@ -167,6 +150,8 @@ function @Get_resource_items() : text
 			foreach $container_contents ($j, $t)
 				$contents.@Add_to_contents($j, $t)
 		
+	$updated_resources = 1
+	$resource_items = $contents
 	return $contents
 	
 	
@@ -239,7 +224,6 @@ function @Output_item_list() : text
 	;		any of those should be in the output containers.
 	; Output items are defined as anything outside the "PARTS"
 	;   	category, but HDDs are manually included too.
-	var $resource_items = @Get_resource_items()
 	var $item_list = ""
 	array $temp_list : text
 	array $crafter_categories : text
@@ -320,7 +304,7 @@ function @Update_crafter_availability()
 		; 	and proceed accordingly
 		var $p = @Crafter_progress($c_name)
 		if $p == -1
-			@error("Error in crafter " & $c_name);
+			@error("Error in crafter " & $c_name & " while crafting " & input_text($c_name, 1))
 		if $p <= 0 or $p >= 1
 			@Cancel_craft($c_name)
 			$available_crafters.append($n)
@@ -359,3 +343,38 @@ function @Missing_items($item:text, $quantity:number) : text
 	else
 		@error("Recipe needed can't be done in a crafter: " & $item)
 	return $missing_items
+	
+	
+	
+	
+function @Initialize_devices()
+
+	; Checks which container and crafter numbers exist
+	; 	and stores it in the respective arrays
+	repeat $max_prefix_count ($i)
+		var $dev_name = text($container_prefix, $i+1)
+		if device_type($dev_name) == "Container" or device_type($dev_name) == "SmallContainer"
+			$container_numbers.append($i+1)
+			
+		$dev_name = text($output_prefix, $i+1)
+		if device_type($dev_name) == "Container" or device_type($dev_name) == "SmallContainer"
+			$output_numbers.append($i+1)
+			
+		$dev_name = text($tool_prefix, $i+1)
+		if device_type($dev_name) == "Container" or device_type($dev_name) == "SmallContainer"
+			$tool_numbers.append($i+1)
+			
+		$dev_name = text($crafter_prefix, $i+1)
+		if device_type($dev_name) == "Crafter"
+			$crafter_numbers.append($i+1)
+			
+	; Starts all the crafters as available
+	foreach $crafter_numbers ($i, $n)
+		$available_crafters.append($n)
+		
+	; Updates the resources available
+	@Get_resource_items()
+	
+	
+function @Devices_tick()
+	$updated_resources = 0

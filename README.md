@@ -20,7 +20,6 @@ This is just another auto crafting script. Connect some containers, a dashboard,
 
 ## Planned features
  - Input container for ores and sorting outputs and resources;
- - Better version control;
  - Better error messages for debugging;
 
 

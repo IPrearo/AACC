@@ -28,6 +28,9 @@ storage var $autocraft_items : text
 ; Items whose crafting recipes craft more than 1 unit of it
 storage var $multicraft_items : text
 
+; Signals if it appended missing items during crafting
+var $appended_missing = 0
+
 ; Signals if a queue/stack was recently finished
 var $finished_crafting = 0
 
@@ -50,11 +53,43 @@ function @Cancel_all_craft()
 	$craft_Q.clear()
 	$craft_S.clear()
 	@clear_error()
+	
+	
+function @print_Q()
+	; Prints the queue in a decent format
+	if $craft_Q.size == 0
+		return
+	print("Queue:")
+	foreach $craft_Q ($i, $item)
+		print(text("   {}: {}", $i, $item))
+		
+function @print_S()
+	; Prints the stack in a decent format
+	if $craft_S.size == 0
+		print("Craft stack empty")
+		return
+		
+	print("Stack:")
+	foreach $craft_S ($index, $list)
+		foreach $list ($i, $item)
+			print(text("   {}: {}", $i, $item))
+		
+function @print_S_root()
+	; Prints the stack in a decent format
+	if $craft_S.size == 0
+		return
+	print("Stack root:")
+	var $S_root = $craft_S.0
+	foreach $S_root ($i, $item)
+		print(text("   {}: {}", $i, $item))
+	
+	
 		
 function @S_append($recipe:text)
 	; Appends a recipe to the top of the stack
 	; Recipe is a K{V} string
 	$craft_S.append($recipe)
+	; @print_S()
 	
 	
 function @S_pop()
@@ -64,6 +99,24 @@ function @S_pop()
 		$finished_crafting = 1
 	else
 		$finished_crafting = 0
+
+
+recursive function @Create_stack()
+	; Crafts the last recipe of the stack
+	; Also checks if the last recipe is done
+	var $recipe = $craft_S.last
+	var $stack_last = size($craft_S)-1
+	var $missed_items = 0
+	foreach $recipe ($item, $quantity)
+			
+		; Checks for missing items to craft the item
+		var $mi = @Missing_items($item, $quantity)
+		; If needed, append missing items to the stack
+		if $mi
+			@S_append($mi)
+			$missed_items = 1
+	if $missed_items
+		recurse()
 
 		
 function @S_top_craft()
@@ -81,41 +134,28 @@ function @S_top_craft()
 			$zero_qtty++
 			continue
 			
-		; Checks for missing items to craft the item
+		; Checks for missing items to craft the item.
+		;	This is a necessary redundancy of @Create_stack for some reason
 		var $mi = @Missing_items($item, $quantity)
 		; If needed, append missing items to the stack
 		if $mi
 			@S_append($mi)
+			$appended_missing = 1
+			continue
+		if $appended_missing
 			continue
 			
-		; Else, try to craft 1 of the current item
+		; Else, try to craft ' of the current item
 		; Craft_with_select returns 1 only if it found an available crafter for this
 		if @Craft_with_select($item)
 			; Updates the amount of items to craft
 			$craft_S.$stack_last.$item -= 1
-	
+			
 	; If all items are crafted, simply pop this recipe
 	if $item_qtty == $zero_qtty and @All_crafters_available()
 		@S_pop()
 		
 			
-			
-function @print_Q()
-	; Prints the queue in a decent format
-	if $craft_Q.size == 0
-		return
-	print("Queue:")
-	foreach $craft_Q ($i, $item)
-		print(text("   {}: {}", $i, $item))
-		
-function @print_S_root()
-	; Prints the stack in a decent format
-	if $craft_S.size == 0
-		return
-	print("Stack root:")
-	var $S_root = $craft_S.0
-	foreach $S_root ($i, $item)
-		print(text("   {}: {}", $i, $item))
 			
 function @Q_append($item:text)
 	; Append an item to last place on crafting queue
@@ -177,11 +217,11 @@ function @Queued_items() : text
 	
 function @Crafting_empty() : number
 	; Returns 1 if the autocrafting queue AND stack are empty
-	if $craft_Q.size or $craft_S.size
+	if $craft_Q.size or $craft_S.size or !@All_crafters_available()
 		return 0
 	return 1
 			
-			
+		
 function @Q_to_S()
 	;@print_Q()
 	;@print_S_root()
@@ -189,6 +229,7 @@ function @Q_to_S()
 	var $item = $craft_Q.0
 	$craft_Q.erase(0)
 	@S_append($item)
+	@Create_stack()
 	; print($item)
 	
 		
@@ -242,7 +283,6 @@ function @Missing_autocrafting_items()
 		if $v > $all_items.$k
 			; print(text("{}: {}", $k, $v-$all_items.$k))
 			if contains($multicraft_items, $k)
-				print($k)
 				@Q_append_amount($k, ceil(($v-$all_items.$k)/$multicraft_items.$k) )
 			else
 				@Q_append_amount($k, $v-$all_items.$k)
@@ -278,7 +318,7 @@ timer frequency $output_frequency
 		@Stop_output()
 		@Stop_tools()
 		
-	$was_crafting = !@Crafting_empty() or !@All_crafters_available()
+	$was_crafting = !@Crafting_empty()
 	
 		
 update
@@ -288,8 +328,12 @@ update
 	if $is_error
 		return
 		
+	$appended_missing = 0
+		
 	; Updates available crafters for this tick
 	@Update_crafter_availability()
+	if $is_error
+		@print_S()
 	
 	; Outputs item if the queue and stack are empty
 	if @Crafting_empty()
@@ -299,6 +343,7 @@ update
 	else
 		@Stop_output()
 		@Stop_tools()
+	
 	
 	var $num_available_crafters = $available_crafters.size
 	

@@ -495,3 +495,4 @@ timer interval 0.5
 	@Draw_left_sidescreen()
 	@Draw_right_sidescreen()
 	$finished_crafting = 0
+	
